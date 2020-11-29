@@ -7,7 +7,7 @@ import { PageNotFoundComponent } from './components/page-not-found/page-not-foun
 const routes: Routes = [
   { path: '',   redirectTo: '/profile', pathMatch: 'full' },
   { path: 'profile', component: ProfileComponent },
-  { path: 'maze-solver', component: MazesolverComponent },
+  { path: 'maze-creator', component: MazesolverComponent },
   { path: '**', component: PageNotFoundComponent },
 ];
 
