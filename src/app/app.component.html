@@ -1,0 +1,22 @@
+<div class="d-flex" id="wrapper">
+  <div class="bg-light border-right" id="sidebar-wrapper">
+    <div class="sidebar-heading">Wilson Joe</div>
+    <div class="list-group list-group-flush">
+      <a href="/profile" class="list-group-item list-group-item-action bg-light">Profile</a>
+      <a href="/maze-solver" class="list-group-item list-group-item-action bg-light">Maze Creator</a>
+    </div>
+  </div>
+
+  <div id="page-content-wrapper">
+    <nav class="navbar navbar-expand-lg navbar-light bg-light border-bottom">
+      <button class="btn btn-primary" id="menu-toggle">
+        <i class="fa fa-bars"></i>
+      </button>
+      <span class="navbar-title">Wilson Joe</span>
+    </nav>
+
+    <div class="container-fluid">
+      <router-outlet></router-outlet>
+    </div>
+  </div>
+</div>

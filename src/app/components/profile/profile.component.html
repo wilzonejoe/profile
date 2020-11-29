@@ -1,0 +1,54 @@
+<div class="container-fluid">
+    <div id="resume">
+        <div class="row">
+            <div class="col-md-auto">
+                <img class="profile-picture" src="https://media-exp1.licdn.com/dms/image/C4E03AQF_UHV5CBGjkw/profile-displayphoto-shrink_200_200/0?e=1611792000&v=beta&t=k48Rm1D0Av9jhdJwQ_nVFj2ENHQwy7z8pRAJKqLR8JU"/>
+            </div>
+            <div class="col-md-auto">
+                <h1 *ngIf="profile?.displayName">{{profile?.displayName}}</h1>
+                <h4 *ngIf="profile?.currentPosition">{{profile?.currentPosition}}</h4>
+                <div *ngIf="profile?.physicalAddress"><span><i class="fa fa-road"></i> {{profile?.physicalAddress}}</span></div>
+                <div *ngIf="profile?.emailAddress"><span><i class="fa fa-envelope"></i> {{profile?.emailAddress}}</span></div>
+                <div *ngIf="profile?.phoneNumber"><span><i class="fa fa-phone"></i> {{profile?.phoneNumber}}</span></div>
+            </div>
+        </div> 
+        <div class="row">
+            <div class="col-md-12 section">
+                <p *ngIf="profile?.overview">{{profile?.overview}}</p>
+            </div>
+        </div>
+        <div class="row" *ngIf="profile.experiences">
+            <div class="col-md-12 section">
+                <h3>Experiences</h3>
+                <hr/>
+                <div *ngFor="let experience of profile.experiences">
+                    <table>
+                        <tr>
+                            <td valign="top">
+                                <img class="logo" [src]="experience.logoUrl"/>
+                            </td>
+                            <td>
+                                <h4>{{experience.company}}</h4>
+                                <p *ngIf="experience.period">{{experience.period}}</p>
+                            </td>
+                        </tr>
+                    </table>
+                    <div *ngIf="!experience.experiences">
+                        <h6 *ngIf="experience.title">{{experience.title}}</h6>
+                        <p *ngIf="experience.description"  [innerHTML]="experience.description"></p>
+                    </div>
+                    <ul *ngIf="experience.experiences">
+                        <li *ngFor="let subexperience of experience.experiences">
+                            <h6 *ngIf="subexperience.title">{{subexperience.title}}</h6>
+                            <div *ngIf="subexperience.period"><span>{{subexperience.period}}</span></div>
+                            <p *ngIf="subexperience.description"  [innerHTML]="subexperience.description"></p>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    <button class="fab" id="save-button" (click)="download()">
+        <i class="fa fa-download"></i>
+    </button>
+</div>
