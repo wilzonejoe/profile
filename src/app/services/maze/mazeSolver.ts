@@ -3,17 +3,29 @@ import { Square } from 'src/app/models/maze/square';
 import { Stack } from '../utils/stack';
 import { BaseMazeUtils } from './baseMazeUtils';
 
-export class MazeGenerator extends BaseMazeUtils{
-    private dimension: number;
+export class MazeSolver extends BaseMazeUtils{
+    public map: Map<number, Array<Square>>;
 
-    constructor(dimension: number) {
+    constructor(map: Map<number, Array<Square>>) {
         super();
-        this.map = new Map<number, Array<Square>>();
-        this.dimension = dimension;
-        this.init();
+        this.map = map;
     }
 
-    public async openMaze(x: number, y: number, drawMap: (map: Map<number, Array<Square>>) => Promise<void>): Promise<void> {
+    private setEndPoint(): void {
+        let square: Square | undefined;
+        const squareRows: Square[] | undefined = this.map.get(this.map.size - 2);
+
+        if (squareRows) {
+            square = squareRows[this.map.size - 2];
+
+            if (square && !square.isWall) {
+                square.endPoint = true;
+            }
+        }
+    }
+
+    public async solveMaze(x: number, y: number, drawMap: (map: Map<number, Array<Square>>) => Promise<void>): Promise<void> {
+        this.setEndPoint();
         const stack = new Stack<Square>();
         const squares = this.map.get(y);
 
@@ -22,6 +34,7 @@ export class MazeGenerator extends BaseMazeUtils{
         }
 
         const intialSquare = squares[x];
+        intialSquare.startPoint = true;
         stack.push(intialSquare);
 
         while (stack.size() !== 0) {
@@ -31,7 +44,7 @@ export class MazeGenerator extends BaseMazeUtils{
                 continue;
             }
 
-            await this.removeWall(currentSquare, drawMap);
+            await this.markAsVisited(currentSquare, drawMap);
 
             let futureSquare: Square | null = null;
 
@@ -52,40 +65,34 @@ export class MazeGenerator extends BaseMazeUtils{
 
                     futureSquare = rowSquares[nextPos[0]];
 
-                    const futureRowSquares = this.map.get(nextPos[3]);
-
-                    if (futureRowSquares) {
-                        const squareAfterFutureStep = futureRowSquares[nextPos[2]];
-                        await this.removeWall(squareAfterFutureStep, drawMap);
-                    }
-
-                    await this.removeWall(futureSquare, drawMap);
+                    await this.markAsVisited(futureSquare, drawMap);
 
                     currentX = futureSquare.x;
                     currentY = futureSquare.y;
                     stack.push(futureSquare);
+
+                    if (futureSquare && futureSquare.endPoint) {
+                        return;
+                    }
                 }
             }
 
-            stack.pop();
+            if (stack.peek()) {
+                stack.pop();
+            }
         }
     }
 
-    private async removeWall(square: Square, drawMap: (map: Map<number, Array<Square>>) => Promise<void>): Promise<void>  {
+    private async markAsVisited(square: Square, drawMap: (map: Map<number, Array<Square>>) => Promise<void>): Promise<void>  {
         if (!square) {
             return;
         }
 
-        square.removeWall();
+        square.markAsVisited();
 
         if (drawMap) {
             await drawMap(this.map);
         }
-    }
-
-    protected isPossibleToMove(pos: number[]): boolean
-    {
-        return this.isInBoundaries(pos) && this.isWall(pos);
     }
 
     protected calculateNextPosToMakeWall(x: number, y: number,  dir: Direction): number[] {
@@ -96,56 +103,33 @@ export class MazeGenerator extends BaseMazeUtils{
         {
             case Direction.UP:
                 ypath--;
-                y -= 2;
                 break;
             case Direction.DOWN:
                 ypath++;
-                y += 2;
                 break;
             case Direction.LEFT:
                 xpath--;
-                x -= 2;
                 break;
             case Direction.RIGHT:
                 xpath++;
-                x += 2;
                 break;
         }
-        toReturn[0] = x;
-        toReturn[1] = y;
-        toReturn[2] = xpath;
-        toReturn[3] = ypath;
+        toReturn[0] = xpath;
+        toReturn[1] = ypath;
         return toReturn;
     }
 
-    private init(): void {
-        for (let i = 0; i < this.dimension; i++) {
-            const list: Array<Square> = new Array<Square>();
-            for (let j = 0; j < this.dimension; j++) {
-                list.push(new Square(j, i));
-            }
-            this.map.set(i, list);
-        }
+    protected isPossibleToMove(pos: number[]): boolean {
+        return this.isInBoundaries(pos) && !this.isWall(pos) && !this.isVisited(pos);
     }
 
-    public printMaze(map: Map<number, Array<Square>>): void {
-        let mazeMap = '';
+    protected isVisited(pos: number[]): boolean {
+        const squares = this.map.get(pos[1]);
 
-        for (let i = 0; i < map.size; i++) {
-            const squares = map.get(i);
-
-            if (!squares) {
-                continue;
-            }
-
-            for (const t of squares) {
-                mazeMap += t.getStringRep();
-            }
-
-            mazeMap += '\n';
+        if (!squares) {
+            return false;
         }
 
-        console.log(mazeMap);
-        console.log('\n');
+        return squares[pos[0]].visited;
     }
 }

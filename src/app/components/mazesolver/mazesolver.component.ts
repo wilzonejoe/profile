@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import * as $ from 'jquery';
 import { Square } from 'src/app/models/maze/square';
 import { MazeGenerator } from 'src/app/services/maze/mazeGenerator';
-import { Queue } from 'src/app/services/utils/queue';
+import { MazeSolver } from 'src/app/services/maze/mazeSolver';
 
 @Component({
   selector: 'app-mazesolver',
@@ -20,10 +20,12 @@ export class MazesolverComponent implements OnInit {
   }
 
   private async generateMaze(): Promise<void> {
-    this.mazeGenerator = new MazeGenerator(21, (map) => this.repaint(map));
+    this.mazeGenerator = new MazeGenerator(31);
     await this.repaint(this.mazeGenerator.map);
 
-    this.mazeGenerator.openMaze(1, 1);
+    await this.mazeGenerator.openMaze(1, 1, this.repaint);
+    const mazeSolver: MazeSolver = new MazeSolver(this.mazeGenerator.map);
+    await mazeSolver.solveMaze(1, 1, this.repaint);
   }
 
   private async repaint(map: Map<number, Array<Square>>): Promise<void> {
@@ -55,10 +57,21 @@ export class MazesolverComponent implements OnInit {
         const square = row[x];
 
         ctx.beginPath();
-        ctx.fillStyle = square.isWall ? '#000' : '#FFF';
+        if (square.startPoint) {
+          ctx.fillStyle = '#FF0000';
+        } else if (square.endPoint) {
+          ctx.fillStyle = '#0000FF';
+        } else if (square.visited) {
+          ctx.fillStyle = '#FFFF00';
+        } else {
+          ctx.fillStyle = square.isWall ? '#000' : '#FFF';
+        }
+
         ctx.fillRect(x * squareDimension, y * squareDimension, squareDimension, squareDimension);
         ctx.stroke();
       }
     }
+
+    await new Promise(resolve => setTimeout(resolve, 5) );
   }
 }
